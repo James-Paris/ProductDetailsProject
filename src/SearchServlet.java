@@ -71,38 +71,40 @@ public class SearchServlet extends HttpServlet {
 		
 		
 		//Input validation
-		String numerics = "^([0-9])+$";
+		String legalQuery = "^([0-9])+$";
 		
-		if(!prodId.matches(numerics)) {
+		if(!prodId.matches(legalQuery)) {
 			//User entered a non-numeric into the search.
-			out.println("<h3>Error!</h3><p>You have entered an invalid character. Please only search by product ID (numbers only).");
+			out.println("<h3>Error!</h3><p>You have entered an illegal character. Please only search by product ID (numbers only).</p>");
 			
 		} else {
 			try {
+				
+				//Create a connection using our db information
 				Class.forName("com.mysql.jdbc.Driver");
 				Connection con = DriverManager.getConnection(url, user, pass);
 				
 				if(con != null) {
-					System.out.println("Executing cmd");
 					
 					try(Statement stmnt = con.createStatement()) {
+						System.out.println("check");
 						ResultSet rs = stmnt.executeQuery(search);
-			
-						
+
+						//Checks for empty resultset then
 						//Print the product information to the user
-						while(rs.next()) {
+						if(rs.next()) {
+							
 							out.println("<h3>Results:</h3>");
 							
 							out.println("<p><b>Product Name: </b>" + rs.getString("productName") + "</p>");
 							out.println("<p><b>Product Description: </b>" + rs.getString("productDetails") + "</p>");
 							out.println("<p><b>Price:</b> $" + currency.format(rs.getFloat("productPrice")) + "</p>");
 						
+						} else {
+							out.println("<h3>Product Not Found!</h3><p>We have no information linked to Product ID: <b>" + prodId 
+									+ "</b>. Please try a new Product ID.</p>");
 						}
-						
-						
 					}
-					
-					
 				} else {
 					System.out.println("[SQL] Failed to connect to database.");
 				}
@@ -113,11 +115,10 @@ public class SearchServlet extends HttpServlet {
 				e.printStackTrace();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("SQL ERROR EXCEPTION THROWN");		
 			}
 		
 		}
-		
 		
 		doGet(request, response);
 	}
