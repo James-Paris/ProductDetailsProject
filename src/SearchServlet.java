@@ -3,6 +3,7 @@
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
+import java.text.DecimalFormat;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -61,44 +62,62 @@ public class SearchServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
+		PrintWriter out = response.getWriter();
 		String prodId = request.getParameter("prodid");
 		String search = "select * from ecommerce where productId = " + prodId;
-		System.out.println("Checkpoint");
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con = DriverManager.getConnection(url, user, pass);
+		
+		//This will be used for formatting the products price
+		DecimalFormat currency = new DecimalFormat("0.00");
+		
+		
+		//Input validation
+		String numerics = "^([0-9])+$";
+		
+		if(!prodId.matches(numerics)) {
+			//User entered a non-numeric into the search.
+			out.println("<h3>Error!</h3><p>You have entered an invalid character. Please only search by product ID (numbers only).");
 			
-			if(con != null) {
-				System.out.println("[SQL] Connection Successful.");
+		} else {
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+				Connection con = DriverManager.getConnection(url, user, pass);
 				
-				try(Statement stmnt = con.createStatement()) {
-					ResultSet rs = stmnt.executeQuery(search);
+				if(con != null) {
+					System.out.println("Executing cmd");
 					
-					while(rs.next()) {
-						System.out.println("Res: " + rs.getString("productName"));
+					try(Statement stmnt = con.createStatement()) {
+						ResultSet rs = stmnt.executeQuery(search);
+			
+						
+						//Print the product information to the user
+						while(rs.next()) {
+							out.println("<h3>Results:</h3>");
+							
+							out.println("<p><b>Product Name: </b>" + rs.getString("productName") + "</p>");
+							out.println("<p><b>Product Description: </b>" + rs.getString("productDetails") + "</p>");
+							out.println("<p><b>Price:</b> $" + currency.format(rs.getFloat("productPrice")) + "</p>");
+						
+						}
+						
+						
 					}
 					
 					
+				} else {
+					System.out.println("[SQL] Failed to connect to database.");
 				}
 				
 				
-			} else {
-				System.out.println("[SQL] Failed to connect to database.");
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			
-			
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
 		}
 		
-		
-		
-		
-		//TODO: SQL query for prod on DB - print results 
 		
 		doGet(request, response);
 	}
