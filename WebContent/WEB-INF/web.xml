@@ -10,8 +10,8 @@
     <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
 <servlet>
-    <servlet-name>SearchResults</servlet-name>
-    <servlet-class>SearchResults</servlet-class>
+    <servlet-name>SearchServlet</servlet-name>
+    <servlet-class>SearchServlet</servlet-class>
 </servlet>
   <servlet-mapping>
     <servlet-name>SearchServlet</servlet-name>
