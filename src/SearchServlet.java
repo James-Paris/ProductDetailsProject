@@ -2,6 +2,7 @@
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,6 +17,13 @@ import javax.servlet.http.HttpSession;
 @WebServlet("/SearchServlet")
 public class SearchServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	public static final String url = "jdbc:mysql://localhost:3306/simplilearn?createDatabaseIfNotExist=true";
+	public static final String user = "root";
+	public static final String pass = "";
+
+	private Class<?> forName;
+	
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -32,6 +40,7 @@ public class SearchServlet extends HttpServlet {
 		res.setContentType("text/html");
 		PrintWriter out = res.getWriter();
 		
+		String search = "select * from ecommerce where prodId =";
 		
 		out.println("<h1>Product Lookup Service</h1><br>");
 		out.println("<form action='' method='POST'>");
@@ -53,6 +62,41 @@ public class SearchServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String prodId = request.getParameter("prodid");
+		String search = "select * from ecommerce where productId = " + prodId;
+		System.out.println("Checkpoint");
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection con = DriverManager.getConnection(url, user, pass);
+			
+			if(con != null) {
+				System.out.println("[SQL] Connection Successful.");
+				
+				try(Statement stmnt = con.createStatement()) {
+					ResultSet rs = stmnt.executeQuery(search);
+					
+					while(rs.next()) {
+						System.out.println("Res: " + rs.getString("productName"));
+					}
+					
+					
+				}
+				
+				
+			} else {
+				System.out.println("[SQL] Failed to connect to database.");
+			}
+			
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
 		
 		//TODO: SQL query for prod on DB - print results 
 		
